@@ -1,0 +1,4 @@
+absolut
+=======
+
+golang handler wrapper
