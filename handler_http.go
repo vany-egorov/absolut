@@ -31,8 +31,8 @@ func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		self.Log.Flush()
 	}()
 
-	start := time.Now()
-	self.Log.Infof("Started %s \"%s\" for %s", r.Method, r.URL.Path, r.RemoteAddr)
+	self.serveHTTPPreffix(r)
+
 	self.Log.Infof("\tProcessing by %s as %s", self.getHandlerName(self.HandlerFunc), r.Header.Get("Accept"))
 
 	if e := self.HandlerFunc(w, r, self); e != nil {
@@ -44,19 +44,5 @@ func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, self.GetStatusText(), self.GetStatus())
 	}
 
-	msg := fmt.Sprintf(
-		"Completed (%d - %s) in %f ms\n",
-		self.GetStatus(),
-		self.GetStatusText(),
-		time.Since(start).Seconds()*1000,
-	)
-	status := self.GetStatus()
-	switch {
-	case status >= http.StatusInternalServerError:
-		self.Log.Errorf("%s", msg)
-	case status >= http.StatusBadRequest:
-		self.Log.Warnf("%s", msg)
-	default:
-		self.Log.Infof("%s", msg)
-	}
+	self.serveHTTPSuffix(w)
 }
