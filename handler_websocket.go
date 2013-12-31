@@ -17,26 +17,28 @@ type WebsocketCallbacks interface {
 
 type HandlerWebsocket struct {
 	HandlerBase
-	callbacks WebsocketCallbacks
+	readWait   time.Duration
+	pingPeriod time.Duration
+	callbacks  WebsocketCallbacks
 }
 
-func NewHandlerWebsocket(callbacks WebsocketCallbacks) *HandlerWebsocket {
+func NewHandlerWebsocket(callbacks WebsocketCallbacks, params ...interface{}) *HandlerWebsocket {
 	self := &HandlerWebsocket{
 		HandlerBase: HandlerBase{
 			Log:    &logStack{},
 			status: http.StatusOK,
 			start:  time.Now(),
 		},
-		callbacks: callbacks,
+		readWait:   1 * time.Second,
+		pingPeriod: ((1 * time.Second) * 9) / 10,
+		callbacks:  callbacks,
 	}
 	self.Child = self
 	return self
 }
 
 func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		self.Log.Flush()
-	}()
+	defer self.Log.Flush()
 
 	self.serveHTTPPreffix(r)
 
@@ -49,9 +51,35 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			self.SetStatus(http.StatusInternalServerError)
 			self.Log.Errorf("\twebsocket.Upgrade failed: %s", e.Error())
 		} else {
-			self.SetStatus(http.StatusSwitchingProtocols)
-			go self.callbacks.AfterConnect(ws)
+			self.callbacks.AfterConnect(ws)
+
 			go func() {
+				ticker := time.NewTicker(self.pingPeriod)
+
+				defer func() {
+					ws.Close()
+					ticker.Stop()
+				}()
+
+				go func() {
+					defer ticker.Stop()
+					for {
+						select {
+						case <-ticker.C:
+							if e := ws.WriteMessage(websocket.PingMessage, []byte{}); e != nil {
+								return
+							}
+						}
+					}
+				}()
+
+				ws.SetReadDeadline(time.Now().Add(self.readWait))
+				ws.SetPongHandler(func(s string) error {
+					ws.SetReadDeadline(time.Now().Add(self.readWait))
+					return nil
+				})
+
+				self.SetStatus(http.StatusSwitchingProtocols)
 				for {
 					messageType, r, e := ws.NextReader()
 					if e != nil {

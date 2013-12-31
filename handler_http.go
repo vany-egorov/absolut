@@ -27,9 +27,7 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 }
 
 func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		self.Log.Flush()
-	}()
+	defer self.Log.Flush()
 
 	self.serveHTTPPreffix(r)
 
