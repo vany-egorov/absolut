@@ -40,9 +40,5 @@ func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		self.Log.Errorf("\tHandlerFunc failed: %s", e.Error())
 	}
 
-	if self.GetStatus() != http.StatusOK {
-		http.Error(w, self.GetStatusText(), self.GetStatus())
-	}
-
 	self.serveHTTPSuffix(w)
 }
