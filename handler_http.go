@@ -1,9 +1,7 @@
 package absolut
 
 import (
-	"fmt"
 	"net/http"
-	"time"
 )
 
 type HandlerHTTP struct {
@@ -18,6 +16,7 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 		HandlerBase: HandlerBase{
 			status: http.StatusOK,
 			Log:    &logStack{},
+			start:  time.Now(),
 		},
 		HandlerFunc: handler,
 	}
