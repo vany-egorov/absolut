@@ -1,7 +1,6 @@
 package absolut
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -39,7 +38,7 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		self.Log.Flush()
 	}()
 
-	self.serveHTTPPreffix()
+	self.serveHTTPPreffix(r)
 
 	if e := self.callbacks.BeforeUpgrade(w, r, self); e != nil {
 		self.SetStatus(http.StatusBadRequest)
@@ -66,5 +65,5 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	self.serveHTTPSuffix()
+	self.serveHTTPSuffix(w)
 }

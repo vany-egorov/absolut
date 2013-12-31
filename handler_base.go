@@ -1,6 +1,7 @@
 package absolut
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -39,11 +40,11 @@ func (self *HandlerBase) getHandlerName(handler interface{}) string {
 	return parts[len(parts)-1]
 }
 
-func (self *HandlerBase) serveHTTPPreffix() {
+func (self *HandlerBase) serveHTTPPreffix(r *http.Request) {
 	self.Log.Infof("Started %s \"%s\" for %s", r.Method, r.URL.Path, r.RemoteAddr)
 }
 
-func (self *HandlerBase) serveHTTPSuffix() {
+func (self *HandlerBase) serveHTTPSuffix(w http.ResponseWriter) {
 	if self.GetStatus() != http.StatusOK && self.GetStatus() != http.StatusSwitchingProtocols {
 		http.Error(w, self.GetStatusText(), self.GetStatus())
 	}
