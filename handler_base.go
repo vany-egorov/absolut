@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 )
 
 type IHandler interface {
@@ -15,6 +16,7 @@ type IHandler interface {
 
 type HandlerBase struct {
 	status int
+	start  time.Time
 	Log    *logStack
 	Child  IHandler
 }
@@ -35,4 +37,31 @@ func (self *HandlerBase) getHandlerName(handler interface{}) string {
 	handlerFullName := runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
 	parts := strings.Split(handlerFullName, "/")
 	return parts[len(parts)-1]
+}
+
+func (self *HandlerBase) serveHTTPPreffix() {
+	self.Log.Infof("Started %s \"%s\" for %s", r.Method, r.URL.Path, r.RemoteAddr)
+}
+
+func (self *HandlerBase) serveHTTPSuffix() {
+	if self.GetStatus() != http.StatusOK && self.GetStatus() != http.StatusSwitchingProtocols {
+		http.Error(w, self.GetStatusText(), self.GetStatus())
+	}
+
+	msg := fmt.Sprintf(
+		"Completed (%d - %s) in %f ms\n",
+		self.GetStatus(),
+		self.GetStatusText(),
+		time.Since(self.start).Seconds()*1000,
+	)
+
+	status := self.GetStatus()
+	switch {
+	case status >= http.StatusInternalServerError:
+		self.Log.Errorf("%s", msg)
+	case status >= http.StatusBadRequest:
+		self.Log.Warnf("%s", msg)
+	default:
+		self.Log.Infof("%s", msg)
+	}
 }
