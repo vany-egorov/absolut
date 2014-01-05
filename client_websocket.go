@@ -12,7 +12,7 @@ import (
 )
 
 type WebsocketClientCallbacks interface {
-	ClientBeforeConnect(WebsocketHandlerClient)
+	ClientBeforeConnect(WebsocketHandlerClient) *http.Header
 
 	AfterConnect(*websocket.Conn)
 	OnMessage(int, io.Reader)
@@ -21,9 +21,10 @@ type WebsocketClientCallbacks interface {
 }
 
 type ClientWebsocket struct {
-	url       *url.URL
-	callbacks WebsocketClientCallbacks
-	Log       *LogStack
+	url        *url.URL
+	callbacks  WebsocketClientCallbacks
+	httpHeader *http.Header
+	Log        *LogStack
 }
 
 func (self *ClientWebsocket) GetLog() *LogStack {
@@ -47,7 +48,12 @@ func newClientWebsocket(u *url.URL, callbacks WebsocketClientCallbacks) {
 		Log:       new(LogStack),
 	}
 
-	self.callbacks.ClientBeforeConnect(self)
+	httpHeader := self.callbacks.ClientBeforeConnect(self)
+	if httpHeader == nil {
+		self.httpHeader = new(http.Header)
+	} else {
+		self.httpHeader = httpHeader
+	}
 
 	for {
 		select {
@@ -88,7 +94,7 @@ func (self *ClientWebsocket) connect() (ws *websocket.Conn, e error) {
 		return nil, fmt.Errorf("net.Dial failed: %s", e.Error())
 	}
 
-	ws, _, e = websocket.NewClient(c, self.url, http.Header{}, 1024, 1024)
+	ws, _, e = websocket.NewClient(c, self.url, *self.httpHeader, 1024, 1024)
 	if e != nil {
 		return nil, fmt.Errorf("websocket.NewClient failed: %s", e)
 	}
