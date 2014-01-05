@@ -45,7 +45,7 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	if e := self.callbacks.HandlerBeforeUpgrade(w, r, self); e != nil {
 		self.SetStatus(http.StatusBadRequest)
-		self.Log.Errorf("\nHandlerBeforeUpgrade failed: %s", e.Error())
+		self.Log.Errorf("\tHandlerBeforeUpgrade failed: %s", e.Error())
 	} else {
 		ws, e := websocket.Upgrade(w, r, nil, 1024, 1024)
 		if e != nil {
