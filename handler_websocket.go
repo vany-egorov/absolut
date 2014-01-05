@@ -9,7 +9,8 @@ import (
 )
 
 type WebsocketCallbacks interface {
-	BeforeUpgrade(http.ResponseWriter, *http.Request, *HandlerWebsocket) error
+	HandlerBeforeUpgrade(http.ResponseWriter, *http.Request, WebsocketHandlerClient) error
+
 	AfterConnect(*websocket.Conn)
 	OnMessage(int, io.Reader)
 	OnClose(error)
@@ -25,7 +26,7 @@ type HandlerWebsocket struct {
 func NewHandlerWebsocket(callbacks WebsocketCallbacks, params ...interface{}) *HandlerWebsocket {
 	self := &HandlerWebsocket{
 		HandlerBase: HandlerBase{
-			Log:    &logStack{},
+			Log:    new(LogStack),
 			status: http.StatusOK,
 			start:  time.Now(),
 		},
@@ -42,9 +43,9 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	self.serveHTTPPreffix(r)
 
-	if e := self.callbacks.BeforeUpgrade(w, r, self); e != nil {
+	if e := self.callbacks.HandlerBeforeUpgrade(w, r, self); e != nil {
 		self.SetStatus(http.StatusBadRequest)
-		self.Log.Errorf("\tBeforeUpgrade failed: %s", e.Error())
+		self.Log.Errorf("\nHandlerBeforeUpgrade failed: %s", e.Error())
 	} else {
 		ws, e := websocket.Upgrade(w, r, nil, 1024, 1024)
 		if e != nil {

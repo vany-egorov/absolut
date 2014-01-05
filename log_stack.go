@@ -7,40 +7,40 @@ import (
 	log "github.com/cihub/seelog"
 )
 
-type logStack struct {
+type LogStack struct {
 	sync.Mutex
 	s [][2]string
 }
 
-func (self *logStack) Tracef(format string, params ...interface{}) {
+func (self *LogStack) Tracef(format string, params ...interface{}) {
 	self.appendWithLevel("trace", format, params...)
 }
 
-func (self *logStack) Debugf(format string, params ...interface{}) {
+func (self *LogStack) Debugf(format string, params ...interface{}) {
 	self.appendWithLevel("debug", format, params...)
 }
 
-func (self *logStack) Infof(format string, params ...interface{}) {
+func (self *LogStack) Infof(format string, params ...interface{}) {
 	self.appendWithLevel("info", format, params...)
 }
 
-func (self *logStack) Warnf(format string, params ...interface{}) {
+func (self *LogStack) Warnf(format string, params ...interface{}) {
 	self.appendWithLevel("warn", format, params...)
 }
 
-func (self *logStack) Errorf(format string, params ...interface{}) {
+func (self *LogStack) Errorf(format string, params ...interface{}) {
 	self.appendWithLevel("error", format, params...)
 }
 
-func (self *logStack) Criticalf(format string, params ...interface{}) {
+func (self *LogStack) Criticalf(format string, params ...interface{}) {
 	self.appendWithLevel("critical", format, params...)
 }
 
-func (self *logStack) appendWithLevel(level string, format string, params ...interface{}) {
+func (self *LogStack) appendWithLevel(level string, format string, params ...interface{}) {
 	self.s = append(self.s, [2]string{level, fmt.Sprintf(format, params...)})
 }
 
-func (self *logStack) Flush() {
+func (self *LogStack) Flush() {
 	self.Lock()
 	for len(self.s) > 0 {
 		level, message := self.s[0][0], self.s[0][1]

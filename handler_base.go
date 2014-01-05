@@ -18,7 +18,7 @@ type IHandler interface {
 type HandlerBase struct {
 	status int
 	start  time.Time
-	Log    *logStack
+	Log    *LogStack
 	Child  IHandler
 }
 
@@ -32,6 +32,10 @@ func (self *HandlerBase) GetStatus() int {
 
 func (self *HandlerBase) GetStatusText() string {
 	return http.StatusText(self.GetStatus())
+}
+
+func (self *HandlerBase) GetLog() *LogStack {
+	return self.Log
 }
 
 func (self *HandlerBase) getHandlerName(handler interface{}) string {
