@@ -9,10 +9,10 @@ import (
 )
 
 type WebsocketServerInitializer interface {
-	HandlerBeforeUpgrade(http.ResponseWriter, *http.Request, WebsocketHandlerClient) (WebsocketCallbacks, error)
+	HandlerBeforeUpgrade(http.ResponseWriter, *http.Request, WebsocketHandlerClient) (WebsocketServerCallbacks, error)
 }
 
-type WebsocketCallbacks interface {
+type WebsocketServerCallbacks interface {
 	AfterConnect(*websocket.Conn)
 	OnMessage(int, io.Reader)
 	OnClose(error)
@@ -23,7 +23,7 @@ type HandlerWebsocket struct {
 	readWait    time.Duration
 	pingPeriod  time.Duration
 	initializer WebsocketServerInitializer
-	callbacks   WebsocketCallbacks
+	callbacks   WebsocketServerCallbacks
 }
 
 func NewHandlerWebsocket(initializer WebsocketServerInitializer, params ...interface{}) *HandlerWebsocket {

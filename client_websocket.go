@@ -12,7 +12,7 @@ import (
 )
 
 type WebsocketClientInitializer interface {
-	ClientBeforeConnect(WebsocketHandlerClient) (*http.Header, WebsocketClientCallbacks)
+	ClientBeforeConnect(WebsocketHandlerClient) (WebsocketClientCallbacks, *http.Header)
 }
 
 type WebsocketClientCallbacks interface {
@@ -51,7 +51,7 @@ func newClientWebsocket(u *url.URL, initializer WebsocketClientInitializer) {
 		Log:         new(LogStack),
 	}
 
-	httpHeader, callbacks := self.initializer.ClientBeforeConnect(self)
+	callbacks, httpHeader := self.initializer.ClientBeforeConnect(self)
 	if httpHeader == nil {
 		self.httpHeader = new(http.Header)
 	} else {

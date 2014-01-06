@@ -35,6 +35,6 @@ func (self *FactoryHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (self *FactoryWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := NewHandlerWebsocket(self.WebsocketServerInitializer)
+	handler := NewHandlerWebsocket(self.Initializer)
 	handler.ServeHTTP(w, r)
 }
