@@ -9,7 +9,7 @@ type FactoryHTTP struct {
 }
 
 type FactoryWebsocket struct {
-	Callbacks WebsocketCallbacks
+	Initializer WebsocketServerInitializer
 }
 
 func Δ(params ...interface{}) http.Handler {
@@ -21,9 +21,9 @@ func NewHandlerFactory(params ...interface{}) http.Handler {
 		return &FactoryHTTP{
 			HandlerFunc: handlerFunc,
 		}
-	} else if callbacks, ok := params[0].(WebsocketCallbacks); ok {
+	} else if initializer, ok := params[0].(WebsocketServerInitializer); ok {
 		return &FactoryWebsocket{
-			Callbacks: callbacks,
+			Initializer: initializer,
 		}
 	}
 	return nil
@@ -35,6 +35,6 @@ func (self *FactoryHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (self *FactoryWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := NewHandlerWebsocket(self.Callbacks)
+	handler := NewHandlerWebsocket(self.WebsocketServerInitializer)
 	handler.ServeHTTP(w, r)
 }

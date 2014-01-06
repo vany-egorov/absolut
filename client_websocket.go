@@ -11,9 +11,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WebsocketClientCallbacks interface {
-	ClientBeforeConnect(WebsocketHandlerClient) *http.Header
+type WebsocketClientInitializer interface {
+	ClientBeforeConnect(WebsocketHandlerClient) (*http.Header, WebsocketClientCallbacks)
+}
 
+type WebsocketClientCallbacks interface {
 	AfterConnect(*websocket.Conn)
 	OnMessage(int, io.Reader)
 	OnError(error)
@@ -21,21 +23,22 @@ type WebsocketClientCallbacks interface {
 }
 
 type ClientWebsocket struct {
-	url        *url.URL
-	callbacks  WebsocketClientCallbacks
-	httpHeader *http.Header
-	Log        *LogStack
+	url         *url.URL
+	initializer WebsocketClientInitializer
+	callbacks   WebsocketClientCallbacks
+	httpHeader  *http.Header
+	Log         *LogStack
 }
 
 func (self *ClientWebsocket) GetLog() *LogStack {
 	return self.Log
 }
 
-func Φ(u *url.URL, callbacks WebsocketClientCallbacks) {
-	newClientWebsocket(u, callbacks)
+func Φ(u *url.URL, initializer WebsocketClientInitializer) {
+	newClientWebsocket(u, initializer)
 }
 
-func newClientWebsocket(u *url.URL, callbacks WebsocketClientCallbacks) {
+func newClientWebsocket(u *url.URL, initializer WebsocketClientInitializer) {
 	ticker := time.NewTicker(1 * time.Second)
 
 	defer func() {
@@ -43,17 +46,18 @@ func newClientWebsocket(u *url.URL, callbacks WebsocketClientCallbacks) {
 	}()
 
 	self := &ClientWebsocket{
-		url:       u,
-		callbacks: callbacks,
-		Log:       new(LogStack),
+		url:         u,
+		initializer: initializer,
+		Log:         new(LogStack),
 	}
 
-	httpHeader := self.callbacks.ClientBeforeConnect(self)
+	httpHeader, callbacks := self.initializer.ClientBeforeConnect(self)
 	if httpHeader == nil {
 		self.httpHeader = new(http.Header)
 	} else {
 		self.httpHeader = httpHeader
 	}
+	self.callbacks = callbacks
 
 	for {
 		select {

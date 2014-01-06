@@ -8,9 +8,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WebsocketCallbacks interface {
-	HandlerBeforeUpgrade(http.ResponseWriter, *http.Request, WebsocketHandlerClient) error
+type WebsocketServerInitializer interface {
+	HandlerBeforeUpgrade(http.ResponseWriter, *http.Request, WebsocketHandlerClient) (WebsocketCallbacks, error)
+}
 
+type WebsocketCallbacks interface {
 	AfterConnect(*websocket.Conn)
 	OnMessage(int, io.Reader)
 	OnClose(error)
@@ -18,21 +20,22 @@ type WebsocketCallbacks interface {
 
 type HandlerWebsocket struct {
 	HandlerBase
-	readWait   time.Duration
-	pingPeriod time.Duration
-	callbacks  WebsocketCallbacks
+	readWait    time.Duration
+	pingPeriod  time.Duration
+	initializer WebsocketServerInitializer
+	callbacks   WebsocketCallbacks
 }
 
-func NewHandlerWebsocket(callbacks WebsocketCallbacks, params ...interface{}) *HandlerWebsocket {
+func NewHandlerWebsocket(initializer WebsocketServerInitializer, params ...interface{}) *HandlerWebsocket {
 	self := &HandlerWebsocket{
 		HandlerBase: HandlerBase{
 			Log:    new(LogStack),
 			status: http.StatusOK,
 			start:  time.Now(),
 		},
-		readWait:   1 * time.Second,
-		pingPeriod: ((1 * time.Second) * 9) / 10,
-		callbacks:  callbacks,
+		readWait:    1 * time.Second,
+		pingPeriod:  ((1 * time.Second) * 9) / 10,
+		initializer: initializer,
 	}
 	self.Child = self
 	return self
@@ -43,10 +46,11 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	self.serveHTTPPreffix(r)
 
-	if e := self.callbacks.HandlerBeforeUpgrade(w, r, self); e != nil {
+	if callbacks, e := self.initializer.HandlerBeforeUpgrade(w, r, self); e != nil {
 		self.SetStatus(http.StatusBadRequest)
 		self.Log.Errorf("\tHandlerBeforeUpgrade failed: %s", e.Error())
 	} else {
+		self.callbacks = callbacks
 		ws, e := websocket.Upgrade(w, r, nil, 1024, 1024)
 		if e != nil {
 			self.SetStatus(http.StatusInternalServerError)
