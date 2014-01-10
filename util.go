@@ -43,3 +43,11 @@ func JsonToPrettyString(self interface{}) string {
 	}
 	return string(b)
 }
+
+func JsonToString(self interface{}) string {
+	b, e := json.Marshal(self)
+	if e != nil {
+		return e.Error()
+	}
+	return string(b)
+}
