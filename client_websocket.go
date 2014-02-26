@@ -39,7 +39,7 @@ func Φ(u *url.URL, initializer WebsocketClientInitializer) {
 }
 
 func newClientWebsocket(u *url.URL, initializer WebsocketClientInitializer) {
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(2 * time.Second)
 
 	defer func() {
 		ticker.Stop()
