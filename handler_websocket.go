@@ -26,15 +26,15 @@ type HandlerWebsocket struct {
 	callbacks   WebsocketServerCallbacks
 }
 
-func NewHandlerWebsocket(initializer WebsocketServerInitializer, params ...interface{}) *HandlerWebsocket {
+func NewHandlerWebsocket(initializer WebsocketServerInitializer, readWait time.Duration) *HandlerWebsocket {
 	self := &HandlerWebsocket{
 		HandlerBase: HandlerBase{
 			Log:    new(LogStack),
 			status: http.StatusOK,
 			start:  time.Now(),
 		},
-		readWait:    1 * time.Second,
-		pingPeriod:  ((1 * time.Second) * 9) / 10,
+		readWait:    readWait,
+		pingPeriod:  ((readWait) * 9) / 10,
 		initializer: initializer,
 	}
 	self.Child = self

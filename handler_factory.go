@@ -2,6 +2,7 @@ package absolut
 
 import (
 	"net/http"
+	"time"
 )
 
 type FactoryHTTP struct {
@@ -10,6 +11,7 @@ type FactoryHTTP struct {
 
 type FactoryWebsocket struct {
 	Initializer WebsocketServerInitializer
+	ReadWait    time.Duration
 }
 
 func Δ(params ...interface{}) http.Handler {
@@ -22,8 +24,16 @@ func NewHandlerFactory(params ...interface{}) http.Handler {
 			HandlerFunc: handlerFunc,
 		}
 	} else if initializer, ok := params[0].(WebsocketServerInitializer); ok {
+		var readWait time.Duration
+		if len(params) > 1 {
+			readWait = params[1].(time.Duration)
+			readWait = readWait * time.Second
+		} else {
+			readWait = 1 * time.Second
+		}
 		return &FactoryWebsocket{
 			Initializer: initializer,
+			ReadWait:    readWait,
 		}
 	}
 	return nil
@@ -35,6 +45,6 @@ func (self *FactoryHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (self *FactoryWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := NewHandlerWebsocket(self.Initializer)
+	handler := NewHandlerWebsocket(self.Initializer, self.ReadWait)
 	handler.ServeHTTP(w, r)
 }
