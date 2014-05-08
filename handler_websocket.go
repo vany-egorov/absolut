@@ -14,7 +14,7 @@ type WebsocketServerInitializer interface {
 
 type WebsocketServerCallbacks interface {
 	AfterConnect(*websocket.Conn)
-	OnMessage(int, io.Reader)
+	OnMessage(int, io.Reader, *websocket.Conn)
 	OnClose(error)
 }
 
@@ -92,7 +92,7 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 						return
 					}
 
-					self.callbacks.OnMessage(messageType, r)
+					self.callbacks.OnMessage(messageType, r, ws)
 				}
 			}()
 		}

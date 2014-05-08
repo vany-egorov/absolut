@@ -17,7 +17,7 @@ type WebsocketClientInitializer interface {
 
 type WebsocketClientCallbacks interface {
 	AfterConnect(*websocket.Conn)
-	OnMessage(int, io.Reader)
+	OnMessage(int, io.Reader, *websocket.Conn)
 	OnError(error)
 	OnClose(error)
 }
@@ -114,7 +114,7 @@ func (self *ClientWebsocket) handle() error {
 			return fmt.Errorf("ws.NextReader failed: %s", e.Error())
 		}
 
-		self.callbacks.OnMessage(messageType, r)
+		self.callbacks.OnMessage(messageType, r, ws)
 	}
 }
 
