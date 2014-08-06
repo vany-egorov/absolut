@@ -38,7 +38,7 @@ func (self *HandlerBase) GetLog() *LogStack {
 	return self.Log
 }
 
-func (self *HandlerBase) getHandlerName(handler interface{}) string {
+func (self *HandlerBase) GetHandlerName(handler interface{}) string {
 	handlerFullName := runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
 	parts := strings.Split(handlerFullName, "/")
 	return parts[len(parts)-1]

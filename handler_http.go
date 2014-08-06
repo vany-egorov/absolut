@@ -31,7 +31,7 @@ func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	self.serveHTTPPreffix(r)
 
-	self.Log.Infof("\tProcessing by %s as %s", self.getHandlerName(self.HandlerFunc), r.Header.Get("Accept"))
+	self.Log.Infof("\tProcessing by %s as %s", self.GetHandlerName(self.HandlerFunc), r.Header.Get("Accept"))
 
 	if e := self.HandlerFunc(w, r, self); e != nil {
 		self.SetStatus(http.StatusInternalServerError)
