@@ -16,7 +16,7 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 	self := &HandlerHTTP{
 		HandlerBase: HandlerBase{
 			status: http.StatusOK,
-			Log:    new(LogStack),
+			Log:    LogStackNew(),
 			start:  time.Now(),
 		},
 		HandlerFunc: handler,

@@ -50,7 +50,7 @@ func newClientWebsocket(u *url.URL, initializer WebsocketClientInitializer, read
 	self := &ClientWebsocket{
 		url:         u,
 		initializer: initializer,
-		Log:         new(LogStack),
+		Log:         LogStackNew(),
 		readWait:    readWait,
 		pingPeriod:  ((readWait) * 9) / 10,
 	}
