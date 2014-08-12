@@ -29,7 +29,7 @@ type HandlerWebsocket struct {
 func NewHandlerWebsocket(initializer WebsocketServerInitializer, readWait time.Duration) *HandlerWebsocket {
 	self := &HandlerWebsocket{
 		HandlerBase: HandlerBase{
-			Log:    new(LogStack),
+			Log:    LogStackNew(),
 			status: http.StatusOK,
 			start:  time.Now(),
 		},
