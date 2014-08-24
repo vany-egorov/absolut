@@ -30,7 +30,7 @@ type Multiple struct {
 	m map[string]*websocket.Conn
 }
 
-func newMultiple() *Multiple {
+func NewMultiple() *Multiple {
 	return &Multiple{
 		m: make(map[string]*websocket.Conn),
 	}
