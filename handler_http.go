@@ -25,7 +25,7 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 			start:  time.Now(),
 		},
 		HandlerFunc: handler,
-		Extension:   HTML,
+		Extension:   JSON,
 	}
 	self.Child = self
 
