@@ -1,8 +1,13 @@
 package absolut
 
+import (
+	log "github.com/cihub/seelog"
+)
+
 var (
-	_websocketReadBufferSize  int = 1024
-	_websocketWriteBufferSize int = 1024
+	_websocketReadBufferSize  int                 = 1024
+	_websocketWriteBufferSize int                 = 1024
+	_defaultLogger            log.LoggerInterface = nil
 )
 
 func SetWebsocketReadBufferSize(v int) {
@@ -19,4 +24,12 @@ func SetWebsocketWriteBufferSize(v int) {
 
 func GetWebsocketWriteBufferSize() int {
 	return _websocketWriteBufferSize
+}
+
+func SetDefaultLogger(v log.LoggerInterface) {
+	_defaultLogger = v
+}
+
+func GetDefaultLogger() log.LoggerInterface {
+	return _defaultLogger
 }

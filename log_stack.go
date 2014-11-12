@@ -21,7 +21,11 @@ func LogStackNew(args ...interface{}) *LogStack {
 			self.log = v
 		}
 	} else {
-		self.log = log.Current
+		if defautLogger := GetDefaultLogger(); defautLogger != nil {
+			self.log = defautLogger
+		} else {
+			self.log = log.Current
+		}
 	}
 
 	return self
