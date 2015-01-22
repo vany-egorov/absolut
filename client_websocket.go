@@ -20,6 +20,8 @@ type WebsocketClientCallbacks interface {
 	OnMessage(int, io.Reader, *websocket.Conn)
 	OnError(error)
 	OnClose(error)
+	GetCloseChan() chan bool
+	DoReconnectOnError() bool
 }
 
 type ClientWebsocket struct {
@@ -41,12 +43,6 @@ func Φ(u *url.URL, initializer WebsocketClientInitializer, readWait time.Durati
 }
 
 func newClientWebsocket(u *url.URL, initializer WebsocketClientInitializer, readWait time.Duration) {
-	ticker := time.NewTicker(2 * time.Second)
-
-	defer func() {
-		ticker.Stop()
-	}()
-
 	self := &ClientWebsocket{
 		url:         u,
 		initializer: initializer,
@@ -63,13 +59,26 @@ func newClientWebsocket(u *url.URL, initializer WebsocketClientInitializer, read
 	}
 	self.callbacks = callbacks
 
-	for {
-		select {
-		case <-ticker.C:
-			if e := self.handle(); e != nil {
-				self.callbacks.OnError(e)
-				continue
+	if self.callbacks.DoReconnectOnError() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				if e := self.handle(); e != nil {
+					self.callbacks.OnError(e)
+					continue
+				}
+			case <-self.callbacks.GetCloseChan():
+				self.callbacks.OnClose(fmt.Errorf("close message -> terminating"))
+				return
 			}
+		}
+	} else {
+		if e := self.handle(); e != nil {
+			self.callbacks.OnError(e)
+			return
 		}
 	}
 }
