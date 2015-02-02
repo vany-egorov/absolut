@@ -42,7 +42,11 @@ func LogStackNew(args ...interface{}) *LogStack {
 		if defautLogger := GetDefaultLogger(); defautLogger != nil {
 			self.log = defautLogger
 		} else {
-			self.log = seelog.Current
+			if defaultLoggerGetter := GetDefaultLoggerGetter(); defaultLoggerGetter != nil {
+				self.log = defaultLoggerGetter.GetLogger()
+			} else {
+				self.log = seelog.Current
+			}
 		}
 	}
 
