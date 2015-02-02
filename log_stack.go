@@ -141,7 +141,7 @@ func (self *LogStack) Flush() {
 		}
 		self.s = self.s[1:len(self.s)]
 	}
-	self.log.Flush()
+	log.Flush()
 }
 
 func (self *LogStack) Closed() bool { return self.isClosed }
