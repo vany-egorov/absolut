@@ -14,8 +14,8 @@ type loggerGetter interface {
 
 type LogStack struct {
 	sync.Mutex
+	seelog.LoggerInterface
 
-	log          seelog.LoggerInterface
 	loggerGetter loggerGetter
 
 	s        []logMesage
@@ -33,24 +33,31 @@ func LogStackNew(args ...interface{}) *LogStack {
 
 	if len(args) > 0 {
 		if v, ok := args[0].(seelog.LoggerInterface); ok {
-			self.log = v
+			self.LoggerInterface = v
 		}
 		if v, ok := args[0].(loggerGetter); ok {
 			self.loggerGetter = v
 		}
 	} else {
 		if defautLogger := GetDefaultLogger(); defautLogger != nil {
-			self.log = defautLogger
+			self.LoggerInterface = defautLogger
 		} else {
 			if defaultLoggerGetter := GetDefaultLoggerGetter(); defaultLoggerGetter != nil {
-				self.log = defaultLoggerGetter.GetLogger()
+				self.LoggerInterface = defaultLoggerGetter.GetLogger()
 			} else {
-				self.log = seelog.Current
+				self.LoggerInterface = seelog.Current
 			}
 		}
 	}
 
 	return self
+}
+
+func (self *LogStack) GetLogger() seelog.LoggerInterface {
+	if self.LoggerInterface != nil {
+		return self.LoggerInterface
+	}
+	return self.loggerGetter.GetLogger()
 }
 
 func (self *LogStack) Tracef(format string, params ...interface{}) {
@@ -120,8 +127,8 @@ func (self *LogStack) Flush() {
 	defer self.Unlock()
 
 	var log seelog.LoggerInterface
-	if self.log != nil {
-		log = self.log
+	if self.LoggerInterface != nil {
+		log = self.LoggerInterface
 	}
 	if self.loggerGetter != nil {
 		log = self.loggerGetter.GetLogger()
