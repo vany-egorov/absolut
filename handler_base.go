@@ -10,7 +10,7 @@ import (
 )
 
 type IHandler interface {
-	SetStatus(int)
+	SetStatus(int) error
 	GetStatus() int
 	GetStatusText() string
 }
@@ -22,9 +22,7 @@ type HandlerBase struct {
 	Child  IHandler
 }
 
-func (self *HandlerBase) SetStatus(status int) {
-	self.status = status
-}
+func (self *HandlerBase) SetStatus(status int) error { self.status = status; return nil }
 
 func (self *HandlerBase) GetStatus() int {
 	return self.status
