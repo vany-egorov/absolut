@@ -20,21 +20,22 @@ type HandlerBase struct {
 	start  time.Time
 	Log    *LogStack
 	Child  IHandler
+
+	clientIP string
+	method   string
+	path     string
 }
 
-func (self *HandlerBase) SetStatus(status int) error { self.status = status; return nil }
-
-func (self *HandlerBase) GetStatus() int {
-	return self.status
-}
-
-func (self *HandlerBase) GetStatusText() string {
-	return http.StatusText(self.GetStatus())
-}
-
-func (self *HandlerBase) GetLog() *LogStack {
-	return self.Log
-}
+func (self *HandlerBase) SetStatus(status int) error        { self.status = status; return nil }
+func (self *HandlerBase) GetStatus() int                    { return self.status }
+func (self *HandlerBase) GetStatusText() string             { return http.StatusText(self.GetStatus()) }
+func (self *HandlerBase) GetLog() *LogStack                 { return self.Log }
+func (self *HandlerBase) SetClientIP(v string) *HandlerBase { self.clientIP = v; return self }
+func (self *HandlerBase) GetClientIP() string               { return self.clientIP }
+func (self *HandlerBase) SetMethod(v string) *HandlerBase   { self.method = v; return self }
+func (self *HandlerBase) GetMethod() string                 { return self.method }
+func (self *HandlerBase) SetPath(v string) *HandlerBase     { self.path = v; return self }
+func (self *HandlerBase) GetPath() string                   { return self.path }
 
 func (self *HandlerBase) GetHandlerName(handler interface{}) string {
 	handlerFullName := runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
@@ -43,7 +44,11 @@ func (self *HandlerBase) GetHandlerName(handler interface{}) string {
 }
 
 func (self *HandlerBase) serveHTTPPreffix(r *http.Request) {
-	self.Log.Infof("Started %s \"%s\" for %s", r.Method, r.URL.Path, r.RemoteAddr)
+	self.
+		SetClientIP(r.RemoteAddr).
+		SetMethod(r.Method).
+		SetPath(r.URL.Path)
+	self.Log.Debugf("Started %s \"%s\" for %s", self.GetMethod(), self.GetPath(), self.GetClientIP())
 }
 
 func (self *HandlerBase) serveHTTPSuffix(w http.ResponseWriter) {
@@ -51,20 +56,20 @@ func (self *HandlerBase) serveHTTPSuffix(w http.ResponseWriter) {
 		http.Error(w, self.GetStatusText(), self.GetStatus())
 	}
 
-	msg := fmt.Sprintf(
-		"Completed (%d - %s) in %f ms\n",
+	latency := time.Now().Sub(self.start)
+	msg := fmt.Sprintf("| %3d | %12v | %s | %s %-7s",
 		self.GetStatus(),
-		self.GetStatusText(),
-		time.Since(self.start).Seconds()*1000,
-	)
+		latency,
+		self.GetClientIP(),
+		self.GetMethod(), self.GetPath())
 
 	status := self.GetStatus()
 	switch {
 	case status >= http.StatusInternalServerError:
-		self.Log.Errorf("%s", msg)
+		self.Log.Error(msg)
 	case status >= http.StatusBadRequest:
-		self.Log.Warnf("%s", msg)
+		self.Log.Warnf(msg)
 	default:
-		self.Log.Infof("%s", msg)
+		self.Log.Infof(msg)
 	}
 }
