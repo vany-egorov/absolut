@@ -8,7 +8,7 @@ import (
 	"github.com/cihub/seelog"
 )
 
-type loggerGetter interface {
+type LoggerGetter interface {
 	GetLogger() seelog.LoggerInterface
 }
 
@@ -16,7 +16,7 @@ type LogStack struct {
 	sync.Mutex
 	seelog.LoggerInterface
 
-	loggerGetter loggerGetter
+	loggerGetter LoggerGetter
 
 	s        []logMesage
 	isClosed bool
@@ -35,7 +35,7 @@ func LogStackNew(args ...interface{}) *LogStack {
 		if v, ok := args[0].(seelog.LoggerInterface); ok {
 			self.LoggerInterface = v
 		}
-		if v, ok := args[0].(loggerGetter); ok {
+		if v, ok := args[0].(LoggerGetter); ok {
 			self.loggerGetter = v
 		}
 	} else {

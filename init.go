@@ -8,7 +8,7 @@ var (
 	_websocketReadBufferSize  int                 = 1024
 	_websocketWriteBufferSize int                 = 1024
 	_defaultLogger            log.LoggerInterface = nil
-	_defaultLoggerGetter      loggerGetter        = nil
+	_defaultLoggerGetter      LoggerGetter        = nil
 )
 
 func SetWebsocketReadBufferSize(v int) { _websocketReadBufferSize = v }
@@ -20,5 +20,5 @@ func GetWebsocketWriteBufferSize() int  { return _websocketWriteBufferSize }
 func SetDefaultLogger(v log.LoggerInterface) { _defaultLogger = v }
 func GetDefaultLogger() log.LoggerInterface  { return _defaultLogger }
 
-func SetDefaultLoggerGetter(v loggerGetter) { _defaultLoggerGetter = v }
-func GetDefaultLoggerGetter() loggerGetter  { return _defaultLoggerGetter }
+func SetDefaultLoggerGetter(v LoggerGetter) { _defaultLoggerGetter = v }
+func GetDefaultLoggerGetter() LoggerGetter  { return _defaultLoggerGetter }
