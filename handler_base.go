@@ -16,19 +16,29 @@ type IHandler interface {
 }
 
 type HandlerBase struct {
-	status int
-	start  time.Time
-	Log    *LogStack
-	Child  IHandler
+	status     int
+	statusText string
+	start      time.Time
+	Log        *LogStack
+	Child      IHandler
 
 	clientIP string
 	method   string
 	path     string
 }
 
-func (self *HandlerBase) SetStatus(status int) error        { self.status = status; return nil }
-func (self *HandlerBase) GetStatus() int                    { return self.status }
-func (self *HandlerBase) GetStatusText() string             { return http.StatusText(self.GetStatus()) }
+func (self *HandlerBase) SetStatus(status int) error { self.status = status; return nil }
+func (self *HandlerBase) SetStatusAndText(status int, text string) {
+	self.status = status
+	self.statusText = text
+}
+func (self *HandlerBase) GetStatus() int { return self.status }
+func (self *HandlerBase) GetStatusText() string {
+	if self.statusText == "" {
+		return http.StatusText(self.GetStatus())
+	}
+	return self.statusText
+}
 func (self *HandlerBase) GetLog() *LogStack                 { return self.Log }
 func (self *HandlerBase) SetClientIP(v string) *HandlerBase { self.clientIP = v; return self }
 func (self *HandlerBase) GetClientIP() string               { return self.clientIP }
@@ -53,7 +63,8 @@ func (self *HandlerBase) serveHTTPPreffix(r *http.Request) {
 
 func (self *HandlerBase) serveHTTPSuffix(w http.ResponseWriter) {
 	if self.GetStatus() != http.StatusOK && self.GetStatus() != http.StatusSwitchingProtocols {
-		http.Error(w, self.GetStatusText(), self.GetStatus())
+		w.WriteHeader(self.GetStatus())
+		fmt.Fprintln(w, self.GetStatusText())
 	}
 
 	latency := time.Now().Sub(self.start)
