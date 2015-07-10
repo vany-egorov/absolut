@@ -1,9 +1,7 @@
 package absolut
 
 import (
-	"mime"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -32,6 +30,9 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 	return self
 }
 
+func (self *HandlerHTTP) GetExtension() Extension { return self.GetExt() }
+func (self *HandlerHTTP) GetExt() Extension       { return self.Extension }
+
 func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer self.Log.Flush()
 
@@ -39,7 +40,7 @@ func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		self.Extension = GuessExtension(extension)
 	}
 
-	w.Header().Set("Content-Type", mime.TypeByExtension("."+strings.ToLower(ExtensionText(self.Extension))))
+	w.Header().Set("Content-Type", self.GetExt().GetContentType())
 
 	self.serveHTTPPreffix(r)
 
