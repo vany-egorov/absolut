@@ -39,7 +39,7 @@ func (self *ClientWebsocket) GetLog() *LogStack {
 }
 
 func Φ(u *url.URL, initializer WebsocketClientInitializer, readWait time.Duration) {
-	newClientWebsocket(u, initializer, readWait*time.Second)
+	newClientWebsocket(u, initializer, readWait)
 }
 
 func newClientWebsocket(u *url.URL, initializer WebsocketClientInitializer, readWait time.Duration) {
