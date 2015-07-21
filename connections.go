@@ -14,6 +14,8 @@ func (self *Single) OnDisconnected()                { self.Ws = nil }
 func (self *Single) GetWs() *websocket.Conn         { return self.Ws }
 func (self *Single) IsConnected() bool              { return self.Ws != nil }
 
+func NewSingle() *Single { return new(Single) }
+
 type Multiple struct {
 	sync.RWMutex
 
