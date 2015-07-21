@@ -27,7 +27,7 @@ func NewHandlerFactory(params ...interface{}) http.Handler {
 		var readWait time.Duration
 		if len(params) > 1 {
 			readWait = params[1].(time.Duration)
-			readWait = readWait * time.Second
+			readWait = readWait
 		} else {
 			readWait = 1 * time.Second
 		}
