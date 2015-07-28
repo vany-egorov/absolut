@@ -32,6 +32,10 @@ func (self *Multiple) Broadcast(m interface{}) error {
 		return e
 	}
 
+	return self.BroadcastByte(b)
+}
+
+func (self *Multiple) BroadcastByte(b []byte) error {
 	self.RLock()
 	defer self.RUnlock()
 
