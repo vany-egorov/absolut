@@ -35,17 +35,15 @@ func (self *Multiple) Broadcast(m interface{}) error {
 	return self.BroadcastByte(b)
 }
 
-func (self *Multiple) BroadcastByte(b []byte) error {
+func (self *Multiple) BroadcastByte(b []byte) (e error) {
 	self.RLock()
 	defer self.RUnlock()
 
 	for _, ws := range self.m {
-		if e := ws.WriteMessage(websocket.TextMessage, b); e != nil {
-			return e
-		}
+		e = ws.WriteMessage(websocket.TextMessage, b)
 	}
 
-	return nil
+	return
 }
 
 func (self *Multiple) OnConnected(id string, ws *websocket.Conn) {
