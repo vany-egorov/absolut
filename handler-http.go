@@ -24,8 +24,8 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 
 			isPoll: false,
 			pollStatuses: map[int]bool{
-				http.StatusNotFound: true,
-				http.StatusOK:       true,
+				http.StatusNotFound:    true,
+				http.StatusNotModified: true,
 			},
 		},
 		HandlerFunc: handler,
