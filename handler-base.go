@@ -25,6 +25,9 @@ type HandlerBase struct {
 	clientIP string
 	method   string
 	path     string
+
+	isPoll       bool
+	pollStatuses map[int]bool
 }
 
 func (self *HandlerBase) SetStatus(status int) error { self.status = status; return nil }
@@ -46,6 +49,14 @@ func (self *HandlerBase) SetMethod(v string) *HandlerBase   { self.method = v; r
 func (self *HandlerBase) GetMethod() string                 { return self.method }
 func (self *HandlerBase) SetPath(v string) *HandlerBase     { self.path = v; return self }
 func (self *HandlerBase) GetPath() string                   { return self.path }
+func (self *HandlerBase) SetIsPoll()                        { self.isPoll = true }
+func (self *HandlerBase) SetPollStatuses(vs []int) *HandlerBase {
+	self.pollStatuses = make(map[int]bool)
+	for _, v := range vs {
+		self.pollStatuses[v] = true
+	}
+	return self
+}
 
 func (self *HandlerBase) GetHandlerName(handler interface{}) string {
 	handlerFullName := runtime.FuncForPC(reflect.ValueOf(handler).Pointer()).Name()
@@ -79,8 +90,16 @@ func (self *HandlerBase) serveHTTPSuffix(w http.ResponseWriter) {
 	case status >= http.StatusInternalServerError:
 		self.Log.Error(msg)
 	case status >= http.StatusBadRequest:
-		self.Log.Warnf(msg)
+		if ok := self.pollStatuses[status]; self.isPoll && ok {
+			self.Log.Debug(msg)
+		} else {
+			self.Log.Warn(msg)
+		}
 	default:
-		self.Log.Infof(msg)
+		if ok := self.pollStatuses[status]; self.isPoll && ok {
+			self.Log.Debug(msg)
+		} else {
+			self.Log.Info(msg)
+		}
 	}
 }

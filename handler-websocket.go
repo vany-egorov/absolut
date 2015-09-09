@@ -32,6 +32,9 @@ func NewHandlerWebsocket(initializer WebsocketServerInitializer, readWait time.D
 			Log:    LogStackNew(),
 			status: http.StatusOK,
 			start:  time.Now(),
+
+			isPoll:       false,
+			pollStatuses: make(map[int]bool),
 		},
 		readWait:    readWait,
 		pingPeriod:  ((readWait) * 9) / 10,

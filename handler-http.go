@@ -21,6 +21,12 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 			status: http.StatusOK,
 			Log:    LogStackNew(),
 			start:  time.Now(),
+
+			isPoll: false,
+			pollStatuses: map[int]bool{
+				http.StatusNotFound: true,
+				http.StatusOK:       true,
+			},
 		},
 		HandlerFunc: handler,
 		Extension:   JSON,
