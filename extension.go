@@ -72,8 +72,8 @@ func (it Extension) String() string         { return extensionText2[it] }
 func (it *Extension) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	v := ""
 	unmarshal(&v)
-	*self = NewEnvironment(v)
-	if self.IsUnknown() {
+	*it = NewExtension(v)
+	if it.IsUnknown() {
 		return fmt.Errorf("got unknown extension '%s'", v)
 	}
 	return nil
