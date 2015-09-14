@@ -1,9 +1,12 @@
 package absolut
 
+import "fmt"
+
 type Extension uint8
 
 const (
-	JSON Extension = iota
+	UNKNOWN Extension = iota
+	JSON
 	HTML
 	CSV
 	TSV
@@ -14,36 +17,39 @@ const (
 )
 
 var extensionText1 = map[Extension]string{
-	JSON:  "JSON",
-	HTML:  "HTML",
-	CSV:   "CSV",
-	TSV:   "TSV",
-	XML:   "XML",
-	YAML:  "YAML",
-	MSG:   "MSG",
-	PROTO: "ProtocolBuffers",
+	UNKNOWN: "UNKNOWN",
+	JSON:    "JSON",
+	HTML:    "HTML",
+	CSV:     "CSV",
+	TSV:     "TSV",
+	XML:     "XML",
+	YAML:    "YAML",
+	MSG:     "MSG",
+	PROTO:   "ProtocolBuffers",
 }
 
 var extensionText2 = map[Extension]string{
-	JSON:  "json",
-	HTML:  "html",
-	CSV:   "csv",
-	TSV:   "tsv",
-	XML:   "xml",
-	YAML:  "yml",
-	MSG:   "msg",
-	PROTO: "proto",
+	UNKNOWN: "unk",
+	JSON:    "json",
+	HTML:    "html",
+	CSV:     "csv",
+	TSV:     "tsv",
+	XML:     "xml",
+	YAML:    "yml",
+	MSG:     "msg",
+	PROTO:   "proto",
 }
 
 var extensionContentType = map[Extension]string{
-	JSON:  "application/json",
-	HTML:  "text/html",
-	CSV:   "text/csv",
-	TSV:   "text/tsv",
-	XML:   "text/xml",
-	YAML:  "application/x-yaml",
-	MSG:   "application/x-msgpack",
-	PROTO: "application/x-protobuf",
+	UNKNOWN: "application/x-unknown",
+	JSON:    "application/json",
+	HTML:    "text/html",
+	CSV:     "text/csv",
+	TSV:     "text/tsv",
+	XML:     "text/xml",
+	YAML:    "application/x-yaml",
+	MSG:     "application/x-msgpack",
+	PROTO:   "application/x-protobuf",
 }
 
 func ExtensionText(ext Extension) string        { return extensionText1[ext] }
@@ -58,11 +64,22 @@ func (it Extension) IsXML() bool            { return it.Is(XML) }
 func (it Extension) IsYAML() bool           { return it.Is(YAML) }
 func (it Extension) IsMSG() bool            { return it.Is(MSG) }
 func (it Extension) IsProto() bool          { return it.Is(PROTO) }
+func (it Extension) IsUnknown() bool        { return it.Is(UNKNOWN) }
 func (it Extension) GetContentType() string { return ExtensionContentType(it) }
 func (it Extension) ContentType() string    { return it.GetContentType() }
 func (it Extension) String() string         { return extensionText2[it] }
 
-func GuessExtension(s string) Extension {
+func (it *Extension) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	v := ""
+	unmarshal(&v)
+	*self = NewEnvironment(v)
+	if self.IsUnknown() {
+		return fmt.Errorf("got unknown extension '%s'", v)
+	}
+	return nil
+}
+
+func NewExtension(s string) Extension {
 	switch s {
 	case ".json", ".JSON", "json", "JSON":
 		return JSON
@@ -82,5 +99,13 @@ func GuessExtension(s string) Extension {
 		return PROTO
 	}
 
-	return JSON
+	return UNKNOWN
+}
+
+func GuessExtension(s string) Extension {
+	it := NewExtension(s)
+	if it.IsUnknown() {
+		it = JSON
+	}
+	return it
 }
