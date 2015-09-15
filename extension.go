@@ -14,6 +14,7 @@ const (
 	YAML
 	MSG
 	PROTO
+	M3U8
 )
 
 var extensionText1 = map[Extension]string{
@@ -26,6 +27,7 @@ var extensionText1 = map[Extension]string{
 	YAML:    "YAML",
 	MSG:     "MSG",
 	PROTO:   "ProtocolBuffers",
+	M3U8:    "M3U8",
 }
 
 var extensionText2 = map[Extension]string{
@@ -38,6 +40,7 @@ var extensionText2 = map[Extension]string{
 	YAML:    "yml",
 	MSG:     "msg",
 	PROTO:   "proto",
+	M3U8:    "m3u8",
 }
 
 var extensionContentType = map[Extension]string{
@@ -50,6 +53,7 @@ var extensionContentType = map[Extension]string{
 	YAML:    "application/x-yaml",
 	MSG:     "application/x-msgpack",
 	PROTO:   "application/x-protobuf",
+	M3U8:    "application/x-mpegurl",
 }
 
 func ExtensionText(ext Extension) string        { return extensionText1[ext] }
@@ -64,6 +68,7 @@ func (it Extension) IsXML() bool            { return it.Is(XML) }
 func (it Extension) IsYAML() bool           { return it.Is(YAML) }
 func (it Extension) IsMSG() bool            { return it.Is(MSG) }
 func (it Extension) IsProto() bool          { return it.Is(PROTO) }
+func (it Extension) IsM3U8() bool           { return it.Is(M3U8) }
 func (it Extension) IsUnknown() bool        { return it.Is(UNKNOWN) }
 func (it Extension) GetContentType() string { return ExtensionContentType(it) }
 func (it Extension) ContentType() string    { return it.GetContentType() }
@@ -97,6 +102,8 @@ func NewExtension(s string) Extension {
 		return YAML
 	case ".proto", ".PROTO", "proto", "PROTO":
 		return PROTO
+	case ".m3u8", ".M3U8", "m3u8", "M3U8":
+		return M3U8
 	}
 
 	return UNKNOWN

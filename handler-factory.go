@@ -6,7 +6,8 @@ import (
 )
 
 type FactoryHTTP struct {
-	HandlerFunc HandlerHTTPFuncType
+	HandlerFunc  HandlerHTTPFuncType
+	LoggerGetter LoggerGetter
 }
 
 type FactoryWebsocket struct {
@@ -20,8 +21,14 @@ func Δ(params ...interface{}) http.Handler {
 
 func NewHandlerFactory(params ...interface{}) http.Handler {
 	if handlerFunc, ok := params[0].(func(http.ResponseWriter, *http.Request, *HandlerHTTP) error); ok {
+		loggerGetter := _defaultLoggerGetter
+		if len(params) > 1 {
+			loggerGetter = params[1].(LoggerGetter)
+
+		}
 		return &FactoryHTTP{
-			HandlerFunc: handlerFunc,
+			HandlerFunc:  handlerFunc,
+			LoggerGetter: loggerGetter,
 		}
 	} else if initializer, ok := params[0].(WebsocketServerInitializer); ok {
 		var readWait time.Duration
@@ -40,11 +47,13 @@ func NewHandlerFactory(params ...interface{}) http.Handler {
 }
 
 func (self *FactoryHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := NewHandlerHTTP(self.HandlerFunc)
+	handler := NewHandlerHTTP(self.HandlerFunc, self.LoggerGetter)
+	handler.contentLengthIN = r.ContentLength
 	handler.ServeHTTP(w, r)
 }
 
 func (self *FactoryWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler := NewHandlerWebsocket(self.Initializer, self.ReadWait)
+	handler.contentLengthIN = r.ContentLength
 	handler.ServeHTTP(w, r)
 }

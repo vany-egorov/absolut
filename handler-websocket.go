@@ -29,7 +29,7 @@ type HandlerWebsocket struct {
 func NewHandlerWebsocket(initializer WebsocketServerInitializer, readWait time.Duration) *HandlerWebsocket {
 	self := &HandlerWebsocket{
 		HandlerBase: HandlerBase{
-			Log:    LogStackNew(),
+			log:    LogStackNew(),
 			status: http.StatusOK,
 			start:  time.Now(),
 
@@ -45,13 +45,13 @@ func NewHandlerWebsocket(initializer WebsocketServerInitializer, readWait time.D
 }
 
 func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer self.Log.Flush()
+	defer self.Log().Flush()
 
 	self.serveHTTPPreffix(r)
 
 	if callbacks, e := self.initializer.HandlerBeforeUpgrade(w, r, self); e != nil {
 		self.SetStatus(http.StatusBadRequest)
-		self.Log.Errorf("\tHandlerBeforeUpgrade failed: %s", e.Error())
+		self.Log().Errorf("HandlerBeforeUpgrade failed: %s", e.Error())
 	} else {
 		self.callbacks = callbacks
 		upgrader := websocket.Upgrader{
@@ -61,7 +61,7 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		ws, e := upgrader.Upgrade(w, r, nil)
 		if e != nil {
 			self.SetStatus(http.StatusInternalServerError)
-			self.Log.Errorf("\twebsocket.Upgrade failed: %s", e.Error())
+			self.Log().Errorf("websocket.Upgrade failed: %s", e.Error())
 		} else {
 			self.callbacks.AfterConnect(ws)
 

@@ -10,16 +10,15 @@ import (
 type HandlerHTTP struct {
 	HandlerBase
 	HandlerFunc HandlerHTTPFuncType
-	Extension   Extension
 }
 
 type HandlerHTTPFuncType func(http.ResponseWriter, *http.Request, *HandlerHTTP) error
 
-func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
+func NewHandlerHTTP(handler HandlerHTTPFuncType, loggerGetter LoggerGetter) *HandlerHTTP {
 	self := &HandlerHTTP{
 		HandlerBase: HandlerBase{
 			status: http.StatusOK,
-			Log:    LogStackNew(),
+			log:    LogStackNew(loggerGetter),
 			start:  time.Now(),
 
 			isPoll: false,
@@ -29,33 +28,28 @@ func NewHandlerHTTP(handler HandlerHTTPFuncType) *HandlerHTTP {
 			},
 		},
 		HandlerFunc: handler,
-		Extension:   JSON,
 	}
+	self.extension = JSON
 	self.Child = self
 
 	return self
 }
 
-func (self *HandlerHTTP) GetExtension() Extension { return self.GetExt() }
-func (self *HandlerHTTP) GetExt() Extension       { return self.Extension }
-
 func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	defer self.Log.Flush()
+	defer self.Log().Flush()
 
 	if extension, ok := mux.Vars(r)["extension"]; ok {
-		self.Extension = GuessExtension(extension)
+		self.extension = GuessExtension(extension)
 	}
-
-	w.Header().Set("Content-Type", self.GetExt().GetContentType())
 
 	self.serveHTTPPreffix(r)
 
-	self.Log.Debugf("\tProcessing by %s as %s", self.GetHandlerName(self.HandlerFunc), ExtensionText(self.Extension))
-
 	if e := self.HandlerFunc(w, r, self); e != nil {
 		self.SetStatus(http.StatusInternalServerError)
-		self.Log.Errorf("\tHandlerFunc failed: %s", e.Error())
+		self.Log().Errorf("HandlerFunc failed: %s", e.Error())
 	}
+
+	w.Header().Set("Content-Type", self.GetExt().GetContentType())
 
 	self.serveHTTPSuffix(w)
 }
