@@ -15,10 +15,17 @@ type HandlerHTTP struct {
 type HandlerHTTPFuncType func(http.ResponseWriter, *http.Request, *HandlerHTTP) error
 
 func NewHandlerHTTP(handler HandlerHTTPFuncType, loggerGetter LoggerGetter) *HandlerHTTP {
+	var logStack *LogStack
+	if loggerGetter == nil {
+		logStack = LogStackNew()
+	} else {
+		logStack = LogStackNew(loggerGetter)
+	}
+
 	self := &HandlerHTTP{
 		HandlerBase: HandlerBase{
 			status: http.StatusOK,
-			log:    LogStackNew(loggerGetter),
+			log:    logStack,
 			start:  time.Now(),
 
 			isPoll: false,
