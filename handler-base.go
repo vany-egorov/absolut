@@ -62,7 +62,7 @@ func (self *HandlerBase) SetContentLengthOUT(v int) *HandlerBase {
 	self.contentLengthOUT = v
 	return self
 }
-func (self *HandlerBase) SetContentLengthIN(v int) *HandlerBase {
+func (self *HandlerBase) SetContentLengthIN(v int64) *HandlerBase {
 	self.contentLengthIN = v
 	return self
 }
