@@ -20,7 +20,7 @@ type WebsocketClientCallbacks interface {
 	OnMessage(int, io.Reader, *websocket.Conn)
 	OnError(error)
 	OnClose(error)
-	GetCloseChan() chan bool
+	GetCloseChan() chan struct{}
 	DoReconnectOnError() bool
 }
 
