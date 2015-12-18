@@ -53,12 +53,12 @@ func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	self.serveHTTPPreffix(r)
 
+	w.Header().Set("Content-Type", self.GetExt().GetContentType())
+
 	if e := self.HandlerFunc(w, r, self); e != nil {
 		self.SetStatus(http.StatusInternalServerError)
 		self.Log().Errorf("HandlerFunc failed: %s", e.Error())
 	}
-
-	w.Header().Set("Content-Type", self.GetExt().GetContentType())
 
 	self.serveHTTPSuffix(w)
 }
