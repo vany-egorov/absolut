@@ -47,6 +47,8 @@ func (self *HandlerHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if extension, ok := mux.Vars(r)["extension"]; ok {
 		self.extension = GuessExtension(extension)
+	} else {
+		self.extension = GuessExtension("json")
 	}
 
 	self.serveHTTPPreffix(r)
