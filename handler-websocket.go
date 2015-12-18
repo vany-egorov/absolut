@@ -55,6 +55,7 @@ func (self *HandlerWebsocket) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	} else {
 		self.callbacks = callbacks
 		upgrader := websocket.Upgrader{
+			CheckOrigin:     func(r *http.Request) bool { return true },
 			ReadBufferSize:  GetWebsocketReadBufferSize(),
 			WriteBufferSize: GetWebsocketWriteBufferSize(),
 		}
