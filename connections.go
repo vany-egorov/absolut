@@ -36,8 +36,8 @@ func (self *Multiple) Broadcast(m interface{}) error {
 }
 
 func (self *Multiple) BroadcastByte(b []byte) (e error) {
-	self.RLock()
-	defer self.RUnlock()
+	self.Lock()
+	defer self.Unlock()
 
 	for _, ws := range self.m {
 		e = ws.WriteMessage(websocket.TextMessage, b)
